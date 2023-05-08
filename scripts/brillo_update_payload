@@ -474,10 +474,18 @@ extract_partition_brillo() {
     if unzip -l "${image}" "${path}/${part}.img" >/dev/null; then
       path_in_zip="${path}"
       break
+    elif unzip -l "${image}" "${path}/${part}.bin" >/dev/null; then
+      path_in_zip="${path}"
+      break
     fi
   done
-  [[ -n "${path_in_zip}" ]] || die "Failed to find ${part}.img"
-  extract_file "${image}" "${path_in_zip}/${part}.img" "${part_file}"
+  [[ -n "${path_in_zip}" ]] || die "Failed to find ${part}.img or ${part}.bin"
+
+  if unzip -l "${image}" "${path_in_zip}/${part}.img" >/dev/null; then
+    extract_file "${image}" "${path_in_zip}/${part}.img" "${part_file}"
+  elif unzip -l "${image}" "${path_in_zip}/${part}.bin" >/dev/null; then
+    extract_file "${image}" "${path_in_zip}/${part}.bin" "${part_file}"
+  fi
 
   # If the partition is stored as an Android sparse image file, we need to
   # convert them to a raw image for the update.
